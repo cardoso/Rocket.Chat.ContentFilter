@@ -38,8 +38,6 @@ export class ContentFilterApp extends App implements IPreMessageSentPrevent {
                                        }, '');
                             }, '');
 
-        this.getLogger().log(fullContent);
-
         for (const r of regexes) {
             if (RegExp(r).exec(fullContent)) {
                 read.getNotifier().notifyUser(message.sender, {
