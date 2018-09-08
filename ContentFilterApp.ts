@@ -3,19 +3,32 @@ import {
     IEnvironmentRead,
     IHttp,
     ILogger,
+    IMessageBuilder,
     IMessageExtender,
     IPersistence,
     IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPreMessageSentPrevent, IPreMessageUpdatedExtend, IPreMessageUpdatedPrevent } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IPostMessageUpdated, IPreMessageSentPrevent, IPreMessageUpdatedExtend, IPreMessageUpdatedModify, IPreMessageUpdatedPrevent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { SettingType } from '@rocket.chat/apps-engine/definition/settings';
 import { validateMessage } from './lib/validateMessage';
 
-export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPreMessageUpdatedPrevent, IPreMessageUpdatedExtend {
+export class ContentFilterApp extends App implements IPostMessageUpdated, IPreMessageSentPrevent, IPreMessageUpdatedPrevent, IPreMessageUpdatedModify, IPreMessageUpdatedExtend {
     constructor(info: IAppInfo, logger: ILogger) {
         super(info, logger);
+    }
+
+    public async checkPostMessageUpdated(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
+        return message.text === 'shazam';
+    }
+
+    public async executePostMessageUpdated(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence): Promise<void> {
+        read.getNotifier().notifyUser(message.sender, {
+            room: message.room,
+            sender: message.sender,
+            text: 'shazam >:(',
+        });
     }
 
     public async checkPreMessageUpdatedExtend(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
@@ -29,6 +42,15 @@ export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPr
         }).getMessage();
     }
 
+    public async checkPreMessageUpdatedModify(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
+        return message.text === 'modify this';
+    }
+
+    // tslint:disable-next-line:max-line-length
+    public async executePreMessageUpdatedModify(message: IMessage, builder: IMessageBuilder, read: IRead, http: IHttp, persistence: IPersistence): Promise<IMessage> {
+        return builder.setText('message edit modified by app').getMessage();
+    }
+
     public async checkPreMessageUpdatedPrevent(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
         return message.text !== 'prevent prevent from being called';
     }
@@ -38,7 +60,7 @@ export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPr
             return false;
         }
 
-        await read.getNotifier().notifyUser(message.sender, {
+        read.getNotifier().notifyUser(message.sender, {
             room: message.room,
             sender: message.sender,
             text: 'Your message edit has been blocked by *Content Filter*',
@@ -58,7 +80,7 @@ export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPr
             return false;
         }
 
-        await read.getNotifier().notifyUser(message.sender, {
+        read.getNotifier().notifyUser(message.sender, {
             room: message.room,
             sender: message.sender,
             text: 'Your message has been blocked by *Content Filter*',
