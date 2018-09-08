@@ -1,0 +1,15 @@
+{
+    "id": "c06fad81-e3f2-445f-8117-cb1bead62a70",
+    "version": "1.0.0",
+    "requiredApiVersion": "1.0.0",
+    "iconFile": "docs/icon.png",
+    "author": {
+        "name": "Matheus Cardoso",
+        "homepage": "https://github.com/cardoso",
+        "support": "matheus@cardo.so"
+    },
+    "name": "Content Filter",
+    "nameSlug": "content-filter",
+    "classFile": "ContentFilterApp.ts",
+    "description": "A simple filter to prevent messages with undesirable content such as spam and phishing URLs from being sent. Supports RegEx."
+}
