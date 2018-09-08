@@ -3,22 +3,34 @@ import {
     IEnvironmentRead,
     IHttp,
     ILogger,
+    IMessageExtender,
     IPersistence,
     IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPreMessageSentPrevent, IPreMessageUpdatedPrevent } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IPreMessageSentPrevent, IPreMessageUpdatedExtend, IPreMessageUpdatedPrevent } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { SettingType } from '@rocket.chat/apps-engine/definition/settings';
 import { validateMessage } from './lib/validateMessage';
 
-export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPreMessageUpdatedPrevent {
+export class ContentFilterApp extends App implements IPreMessageSentPrevent, IPreMessageUpdatedPrevent, IPreMessageUpdatedExtend {
     constructor(info: IAppInfo, logger: ILogger) {
         super(info, logger);
     }
 
+    public async checkPreMessageUpdatedExtend(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
+        return message.text === 'rick roll';
+    }
+
+    // tslint:disable-next-line:max-line-length
+    public async executePreMessageUpdatedExtend(message: IMessage, extend: IMessageExtender, read: IRead, http: IHttp, persistence: IPersistence): Promise<IMessage> {
+        return extend.addAttachment({
+            videoUrl: 'https://archive.org/download/RickAstleyNeverGonnaGiveYouUp_201603/Rick%20Astley%20-%20Never%20Gonna%20Give%20You%20Up.mp4',
+        }).getMessage();
+    }
+
     public async checkPreMessageUpdatedPrevent(message: IMessage, read: IRead, http: IHttp): Promise<boolean> {
-        return true;
+        return message.text !== 'prevent prevent from being called';
     }
 
     public async executePreMessageUpdatedPrevent(message: IMessage, read: IRead, http: IHttp, persistence: IPersistence): Promise<boolean> {
